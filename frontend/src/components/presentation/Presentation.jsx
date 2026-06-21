@@ -1,11 +1,9 @@
-import "./presentation.css"
 import presentationBackground from "../../assets/presentation-background.mp4"
+import "./Presentation.css"
 
 export const Presentation = () => {
-
     return (
-        <section className="presentation-section">
-            {/* <NavBar/> */}
+        <section id="home" className="presentation-section">
             <video className="presentation-video" autoPlay muted loop playsInline>
                 <source src={presentationBackground} type="video/mp4" />
             </video>

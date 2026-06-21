@@ -1,19 +1,17 @@
-import "./navbar.css"
+import "./NavBar.css"
 
 export const NavBar = () => {
     return (
-        <>
-        <nav class="navbar">
-            <div class="navbar-container">      
-                <ul class="navbar-menu">
-                  <li class="navbar-item"><a href="#home" class="navbar-link">Home</a></li>
-                  <li class="navbar-item"><a href="#services" class="navbar-link">Services</a></li>
-                  <li class="navbar-item"><a href="#about" class="navbar-link">About</a></li>
-                  <li class="navbar-item"><a href="#contact" class="navbar-link">Contact</a></li>
+        <nav className="navbar">
+            <div className="navbar-container">
+                {/* <a className="navbar-brand">LUCAS GARCIA</a> */}
+
+                <ul className="navbar-menu">
+                    <li className="navbar-item"><a href="#home" className="navbar-link">Home</a></li>
+                    <li className="navbar-item"><a href="#about" className="navbar-link">Projects</a></li>
+                    <li className="navbar-item"><a href="#projects" className="navbar-link">Contact</a></li>
                 </ul>
             </div>
         </nav>
-        </>
-        
     )
 }
