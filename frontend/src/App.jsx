@@ -1,10 +1,13 @@
 import './App.css'
+import { NavBar } from './components/nav/NavBar'
+import { Home } from './pages/Home'
 
 function App() {
 
   return (
     <>
-    <h1>Meu portfolio</h1>
+      {/* <NavBar/> */}
+      <Home/>
     </>
   )
 }
