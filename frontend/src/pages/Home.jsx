@@ -6,7 +6,7 @@ import "./Home.css"
 export const Home = () => {
     return (
         <>
-            <Presentation />
+            <Presentation/>
             <About/>
             <Stacks/>
         </>

@@ -1,4 +1,5 @@
 import presentationBackground from "../../assets/presentation-background.mp4"
+import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 import "./Presentation.css"
 
 export const Presentation = () => {
@@ -13,6 +14,8 @@ export const Presentation = () => {
                 <h1>Lucas Garcia</h1>
                 <p className="role-description">Backend development, AI integration and modern web applications.</p>
             </div>
+
+            <ScrollArrow targetId="about" label="Ir para a secao About" />
         </section>
     )
 }

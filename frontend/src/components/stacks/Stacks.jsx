@@ -1,4 +1,5 @@
 import { Kicker } from "../kicker/Kicker"
+import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 import stacksBackground from "../../assets/stacks-background.jpg"
 import "./Stacks.css"
 
@@ -8,18 +9,21 @@ const stackItems = [
     "JavaScript",
     "Python",
     "FastAPI",
-    "Relational Databases",
+    "GenAI",
+    "SQL Databases",
+    "Docker",
     "Azure",
     "Oracle Cloud",
 ]
 
 const serviceItems = [
-    "Backend APIs",
+    "APIs and Backend Systems",
     "Web Applications",
     "AI-powered Solutions",
-    "Automation Systems",
+    "GenAI Integrations",
     "Cloud Integrations",
-    "Business Workflows",
+    "Business Automation",
+    "Containerized Deployments"
 ]
 
 export const Stacks = () => {
@@ -31,15 +35,17 @@ export const Stacks = () => {
                     <Kicker titulo="Tech stack" />
                     <h2>Stacks & Services</h2>
                 </div>
+
+                <ScrollArrow targetId="stacks-services" label="Ir para stacks e services" />
             </div>
 
-            <div className="stacks-content-panel">
+            <div id="stacks-services" className="stacks-content-panel">
                 <div className="stacks-content-grid">
                     <div className="stacks-card">
                         <Kicker titulo="Stacks" />
                         <h3>Tools I use to build products</h3>
                         <ul className="stacks-list">
-                            {/* Criando item list para cada item na lista de stacks */}
+                            {/* Criando um item de lista para cada stack. */}
                             {stackItems.map((stack) => (
                                 <li key={stack}>{stack}</li>
                             ))}
@@ -50,11 +56,20 @@ export const Stacks = () => {
                         <Kicker titulo="Services" />
                         <h3>What I can help ship</h3>
                         <ul className="stacks-list">
-                            {/* Criando item list para cada item na lista de services */}
+                            {/* Criando um item de lista para cada servico. */}
                             {serviceItems.map((service) => (
                                 <li key={service}>{service}</li>
                             ))}
                         </ul>
+
+                        <div className="go-to-projects">
+                            <a href="#projects" className="go-to-projects-link" aria-label="View projects">
+                                <span>View Projects</span>
+                                <svg className="go-to-projects-icon" xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8" />
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

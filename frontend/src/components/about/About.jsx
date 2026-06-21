@@ -1,6 +1,7 @@
 import "./About.css"
 import aboutImage from "../../assets/about-me.png"
 import { Kicker } from "../kicker/Kicker"
+import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 
 export const About = () => {
     return (
@@ -29,6 +30,8 @@ export const About = () => {
                     </div>
                 </div>
             </div>
+
+            <ScrollArrow targetId="stacks" label="Ir para a secao Stacks" />
         </section>
     )
 }

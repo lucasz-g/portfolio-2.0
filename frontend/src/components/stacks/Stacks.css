@@ -1,6 +1,7 @@
 .stacks-section {
     background: #050505;
     color: white;
+    scroll-margin-top: 72px;
 }
 
 .stacks-title-panel {
@@ -45,10 +46,12 @@
 }
 
 .stacks-content-panel {
+    position: relative;
     min-height: 100vh;
     display: flex;
     align-items: center;
     padding: 7rem 2rem;
+    scroll-margin-top: 72px;
 }
 
 .stacks-content-grid {
@@ -86,6 +89,35 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.78);
     font-size: 1rem;
+}
+
+.go-to-projects {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.go-to-projects-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 160ms ease;
+}
+
+.go-to-projects-link:hover {
+    opacity: 0.7;
+}
+
+.go-to-projects-icon {
+    flex: 0 0 auto;
+    transition: transform 160ms ease;
+}
+
+.go-to-projects-link:hover .go-to-projects-icon {
+    transform: translateX(4px);
 }
 
 @media (max-width: 780px) {
