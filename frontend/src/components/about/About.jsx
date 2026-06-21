@@ -1,5 +1,6 @@
 import "./About.css"
 import aboutImage from "../../assets/about-me.png"
+import { Kicker } from "../kicker/Kicker"
 
 export const About = () => {
     return (
@@ -10,8 +11,8 @@ export const About = () => {
                 </div>
 
                 <div className="about-me-container">
-                    <span className="about-me-kicker">About me</span>
-                    <h2>Building backend systems, web applications, and AI-powered solutions.</h2>
+                    <Kicker titulo="About Me"/>
+                    <h2>Turning ideas into software solutions.</h2>
 
                     <div className="about-me-text">
                         <p>

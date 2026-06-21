@@ -1,5 +1,6 @@
 import { About } from "../components/about/About"
 import { Presentation } from "../components/presentation/Presentation"
+import { Stacks } from "../components/stacks/Stacks"
 import "./Home.css"
 
 export const Home = () => {
@@ -7,7 +8,7 @@ export const Home = () => {
         <>
             <Presentation />
             <About/>
-            {/* <Stacks/> */}
+            <Stacks/>
         </>
     )
 }

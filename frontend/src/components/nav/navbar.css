@@ -6,6 +6,34 @@
     z-index: 10;
     background: transparent;
     color: white;
+    transition: background 200ms ease, backdrop-filter 200ms ease;
+}
+
+/* Brilho inferior escondido. Ele aparece quando .navbar-scrolled e aplicada. */
+.navbar::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: min(760px, 82%);
+    height: 1px;
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.75), 0 0 34px rgba(255, 255, 255, 0.35);
+    opacity: 0;
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+
+/* Classe aplicada pelo React quando o scrollY passa do limite definido em NavBar.jsx. */
+.navbar-scrolled {
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(10px);
+}
+
+.navbar-scrolled::after {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
 }
 
 .navbar-container {
@@ -41,7 +69,6 @@
 
 .navbar-link:hover {
     opacity: 0.70;
-    transition: opacity 160ms ease;
 }
 
 @media (max-width: 640px) {
