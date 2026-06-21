@@ -1,4 +1,5 @@
 import contactImage from "../../assets/contact.png"
+import { Kicker } from "../../components/Kicker/Kicker"
 import "./Contact.css"
 
 const contactLinks = [
@@ -24,7 +25,7 @@ export const Contact = () => {
         <main className="contact-page">
             <section className="contact-panel">
                 <div className="contact-copy">
-                    <span className="contact-kicker">Contact</span>
+                    <Kicker titulo="Contact"/>
                     <h1>Let's build something useful.</h1>
                     <p>
                         Have a project, an idea, or a backend/API integration that needs to become real? Send me a message and I will get back to you.
