@@ -65,10 +65,15 @@
     font-size: 0.95rem;
     font-weight: 400;
     transition: opacity 160ms ease;
+    padding-bottom: 5px;
 }
 
 .navbar-link:hover {
     opacity: 0.70;
+}
+
+.navbar-link.active {
+    border-bottom: 1px solid white;
 }
 
 @media (max-width: 640px) {
@@ -86,3 +91,4 @@
         font-size: 0.85rem;
     }
 }
+

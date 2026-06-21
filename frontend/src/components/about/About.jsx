@@ -1,7 +1,7 @@
 import "./About.css"
 import aboutImage from "../../assets/about-me.png"
-import { Kicker } from "../kicker/Kicker"
-import { ScrollArrow } from "../scrollArrow/ScrollArrow"
+import { Kicker } from "../Kicker/Kicker"
+import { ScrollArrow } from "../ScrollArrow/ScrollArrow"
 
 export const About = () => {
     return (
@@ -12,7 +12,7 @@ export const About = () => {
                 </div>
 
                 <div className="about-me-container">
-                    <Kicker titulo="About Me"/>
+                    <Kicker titulo="About Me" />
                     <h2>Turning ideas into software solutions.</h2>
 
                     <div className="about-me-text">

@@ -1,5 +1,5 @@
-import { Kicker } from "../kicker/Kicker"
-import { ScrollArrow } from "../scrollArrow/ScrollArrow"
+import { Kicker } from "../Kicker/Kicker"
+import { ScrollArrow } from "../ScrollArrow/ScrollArrow"
 import stacksBackground from "../../assets/stacks-background.jpg"
 import "./Stacks.css"
 

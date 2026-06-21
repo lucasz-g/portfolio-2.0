@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { NavLink } from "react-router"
 import "./NavBar.css"
 
 export const NavBar = () => {
@@ -26,9 +27,9 @@ export const NavBar = () => {
         <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
             <div className="navbar-container">
                 <ul className="navbar-menu">
-                    <li className="navbar-item"><a href="#home" className="navbar-link">Home</a></li>
-                    <li className="navbar-item"><a href="#about" className="navbar-link">Projects</a></li>
-                    <li className="navbar-item"><a href="#projects" className="navbar-link">Contact</a></li>
+                    <li className="navbar-item"><NavLink to="/" end className="navbar-link">Home</NavLink></li>
+                    <li className="navbar-item"><NavLink to="/projects" className="navbar-link">Projects</NavLink></li>
+                    <li className="navbar-item"><NavLink to="/contact" className="navbar-link">Contact</NavLink></li>
                 </ul>
             </div>
         </nav>
