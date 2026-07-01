@@ -6,7 +6,7 @@ export const ProjectsPanel = () => {
     return (
         <section className="projects-hero">
             <div className="projects-video-frame">
-                <video className="projects-video" autoPlay muted loop playsInline preload="auto">
+                <video className="projects-video" autoPlay muted loop playsInline preload="auto" {...{ "webkit-playsinline": "true" }}>
                     <source src={projectsVideo} type="video/mp4" />
                 </video>
             </div>

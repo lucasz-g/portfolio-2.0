@@ -5,7 +5,7 @@ import "./presentation.css"
 export const Presentation = () => {
     return (
         <section id="home" className="presentation-section">
-            <video className="presentation-video" autoPlay muted loop playsInline>
+            <video className="presentation-video" autoPlay muted loop playsInline {...{ "webkit-playsinline": "true" }} preload="auto">
                 <source src={presentationBackground} type="video/mp4" />
             </video>
 
