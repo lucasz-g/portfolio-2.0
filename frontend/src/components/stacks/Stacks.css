@@ -99,25 +99,27 @@
 .go-to-projects-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
+    gap: .6rem;
+
+    padding: .8rem 1.2rem;
+
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+
+    color: #fff;
     text-decoration: none;
-    transition: opacity 160ms ease;
+    font-weight: 600;
+
+    transition: all .25s ease;
 }
 
-.go-to-projects-link:hover {
-    opacity: 0.7;
+.go-to-projects-link:hover{
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.4);
 }
 
-.go-to-projects-icon {
-    flex: 0 0 auto;
-    transition: transform 160ms ease;
-}
-
-.go-to-projects-link:hover .go-to-projects-icon {
-    transform: translateX(4px);
+.go-to-projects-link:hover .go-to-projects-icon{
+    transform: translateX(6px);
 }
 
 @media (max-width: 780px) {
