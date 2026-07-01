@@ -1,6 +1,6 @@
 import presentationBackground from "../../assets/presentation-background.mp4"
-import { ScrollArrow } from "../ScrollArrow/ScrollArrow"
-import "./Presentation.css"
+import { ScrollArrow } from "../scrollArrow/ScrollArrow"
+import "./presentation.css"
 
 export const Presentation = () => {
     return (

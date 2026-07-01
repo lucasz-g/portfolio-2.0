@@ -1,7 +1,7 @@
 import "./About.css"
 import aboutImage from "../../assets/about-me.png"
-import { Kicker } from "../Kicker/Kicker"
-import { ScrollArrow } from "../ScrollArrow/ScrollArrow"
+import { Kicker } from "../kicker/Kicker"
+import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 
 export const About = () => {
     return (

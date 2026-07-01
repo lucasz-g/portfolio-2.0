@@ -1,5 +1,5 @@
 import contactImage from "../../assets/contact.png"
-import { Kicker } from "../../components/Kicker/Kicker"
+import { Kicker } from "../../components/kicker/Kicker"
 import "./Contact.css"
 
 const contactLinks = [

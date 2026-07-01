@@ -2,7 +2,7 @@ import "./ProjectsItems.css"
 import { getMyRepos } from "../../api/api"
 import { useEffect, useState } from "react"
 import { ProjectCard } from "../ProjectCard/ProjectCard";
-import { Kicker } from "../Kicker/Kicker";
+import { Kicker } from "../kicker/Kicker";
 
 export const ProjectsItems = () => {
     const [myRepos, setMyRepos] = useState([]);

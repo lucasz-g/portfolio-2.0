@@ -1,5 +1,5 @@
 import projectsVideo from "../../assets/projects-video.mp4"
-import { Kicker } from "../Kicker/Kicker"
+import { Kicker } from "../kicker/Kicker"
 import "./ProjectsPanel.css"
 
 export const ProjectsPanel = () => {

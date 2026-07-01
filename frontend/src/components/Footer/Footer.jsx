@@ -1,7 +1,7 @@
 import { Link } from "react-router"
 import footerImage from "../../assets/footer.jpg"
 import "./Footer.css"
-import { Kicker } from '../Kicker/Kicker'
+import { Kicker } from '../kicker/Kicker.jsx'
 
 export const Footer = () => {
 

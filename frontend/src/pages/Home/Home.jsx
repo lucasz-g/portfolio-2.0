@@ -1,6 +1,6 @@
-import { About } from "../../components/About/About"
-import { Presentation } from "../../components/Presentation/Presentation"
-import { Stacks } from "../../components/Stacks/Stacks"
+import { About } from "../../components/about/About"
+import { Presentation } from "../../components/presentation/Presentation"
+import { Stacks } from "../../components/stacks/Stacks"
 import "./Home.css"
 
 export const Home = () => {
