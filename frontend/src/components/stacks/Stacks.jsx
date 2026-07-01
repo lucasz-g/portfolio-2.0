@@ -2,7 +2,7 @@ import { Kicker } from "../kicker/Kicker"
 import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 import stacksBackground from "../../assets/stacks-background.jpg"
 import "./Stacks.css"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 
 const stackItems = [
     "Spring Boot",
