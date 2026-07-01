@@ -1,5 +1,5 @@
 import projectsVideo from "../../assets/projects-video.mp4"
-import { Kicker } from "../../components/Kicker/Kicker"
+import { Kicker } from "../Kicker/Kicker"
 import "./ProjectsPanel.css"
 
 export const ProjectsPanel = () => {
@@ -14,9 +14,9 @@ export const ProjectsPanel = () => {
             <div className="projects-copy">
                 <Kicker titulo="Selected Work" />
                 <h1>Projects</h1>
-                <p><p>
+                <p>
                     A collection of software solutions, applications and experiments built throughout my software engineering journey.
-                </p></p>
+                </p>
             </div>
         </section>
     )

@@ -1,0 +1,100 @@
+.project-card {
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.project-card:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.065);
+    transform: translateY(-3px);
+}
+
+.project-card-content {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.project-card h3 {
+    margin: 0;
+    color: white;
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+    line-height: 1.1;
+    font-weight: 750;
+}
+
+.project-card-description {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.98rem;
+    line-height: 1.65;
+}
+
+.project-card-languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.project-card-languages span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.82rem;
+    line-height: 1;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.project-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 0.25rem;
+}
+
+.project-card-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.6rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition: border-color 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.project-card-actions a:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.project-card-actions a:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .project-card {
+        min-height: auto;
+    }
+
+    .project-card-actions a {
+        flex: 1 1 130px;
+    }
+}
