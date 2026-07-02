@@ -1,166 +1,78 @@
-# Portfolio 2.0
+# Portfolio 2.0 - Frontend
 
-Aplicacao web moderna desenvolvida com React e Vite para apresentar perfil profissional, stacks, servicos, projetos em destaque e canais de contato.
+Frontend do portfolio, desenvolvido com React e Vite. Esta aplicacao entrega a experiencia visual do site, as rotas publicas e a integracao atual com a GitHub REST API para carregar projetos em destaque.
 
-Atualmente, o frontend se comunica diretamente com a GitHub REST API usando Axios para buscar repositorios marcados como destaque. A evolucao planejada e mover essa comunicacao para um backend proprio em Spring Boot, deixando o frontend consumir apenas a API da aplicacao.
+## Estado Atual
 
-## Status do Projeto
+- Frontend implementado.
+- Integracao direta com GitHub API via Axios.
+- Listagem dinamica de repositorios marcados com topic `featured`.
+- Efeitos visuais com componentes React Bits/WebGL.
+- Responsividade desktop/mobile.
+- Deploy preparado para Vercel.
 
-- Frontend em React pronto.
-- Roteamento client-side com React Router.
-- Integracao atual com GitHub API via Axios.
-- Listagem dinamica de repositorios com topic `featured`.
-- Componentes visuais com efeitos React Bits/WebGL.
-- Deploy preparado para Vercel com fallback de rotas SPA.
-- Backend Spring Boot planejado para intermediar a comunicacao com GitHub.
+> Nota: a integracao direta com GitHub API e temporaria. O plano e migrar o consumo para o backend Spring Boot em `../backend`.
 
-## Funcionalidades
+## Rotas
 
-- Home com apresentacao, sobre mim e stacks/servicos.
-- Pagina de projetos com hero visual, efeito Orb e cards dinamicos.
-- Cards de projetos alimentados pela GitHub API.
-- Filtro de repositorios por topic `featured`.
-- Leitura das linguagens de cada repositorio via endpoint `languages_url`.
-- Pagina de contato com links para email, LinkedIn e GitHub.
-- Layout responsivo para desktop e mobile.
-- Efeitos visuais com `Beams`, `Orb` e `SpotlightCard`.
+| Rota | Pagina | Descricao |
+| --- | --- | --- |
+| `/` | `Home` | Presentation, About e Stacks |
+| `/projects` | `Projects` | Hero de projetos e cards vindos da GitHub API |
+| `/contact` | `Contact` | Links de contato |
 
-## Stack
+## Arquitetura do Frontend
 
-### Frontend
+```mermaid
+flowchart TD
+    main[main.jsx] --> app[App.jsx]
+    app --> router[BrowserRouter]
+    router --> home[Home]
+    router --> projects[Projects]
+    router --> contact[Contact]
 
-- React 19
-- Vite
-- JavaScript
-- CSS
-- React Router
-- Axios
-- Three.js
-- React Three Fiber
-- Drei
-- OGL
-- Tailwind/Vite plugin configurado
+    home --> presentation[Presentation + Beams]
+    home --> about[About]
+    home --> stacks[Stacks + SpotlightCard]
 
-### API Atual
+    projects --> panel[ProjectsPanel + Orb]
+    projects --> items[ProjectsItems]
+    items --> api[src/api/api.js]
+    api --> github[GitHub REST API]
+    items --> card[ProjectCard + SpotlightCard]
 
-- GitHub REST API
-- Axios
-- Token via variavel de ambiente `VITE_GITHUB_TOKEN`
-
-### Backend Planejado
-
-- Java
-- Spring Boot
-- Spring Web
-- Spring Security
-- REST API
-- Integracao server-side com GitHub API
-- Cache para respostas do GitHub
-- DTOs para expor ao frontend apenas os dados necessarios
-
-## Arquitetura Atual
-
-Hoje o frontend chama a GitHub API diretamente:
-
-```text
-Browser
-  |
-  | React + Axios
-  v
-GitHub REST API
-  |
-  | /user/repos
-  | /repos/{owner}/{repo}/languages
-  v
-Repositorios filtrados por topic "featured"
+    contact --> contactLinks[Email, LinkedIn, GitHub]
 ```
 
-Fluxo implementado em `src/api/api.js`:
+## Fluxo Atual de Projetos
 
-1. Le o token em `import.meta.env.VITE_GITHUB_TOKEN`.
-2. Chama `https://api.github.com/user/repos`.
-3. Busca os repositorios do usuario autenticado com `visibility=all` e `affiliation=owner`.
-4. Para cada repositorio, chama `repo.languages_url`.
-5. Monta um objeto simplificado com `id`, `name`, `description`, `url`, `homepage`, `languages` e `topics`.
-6. Retorna apenas repositorios que possuem o topic `featured`.
-7. `ProjectsItems.jsx` renderiza os dados usando `ProjectCard.jsx`.
+```mermaid
+sequenceDiagram
+    participant Page as ProjectsItems
+    participant Api as src/api/api.js
+    participant GH as GitHub REST API
 
-### Observacao de Seguranca
-
-Essa arquitetura e funcional para desenvolvimento, mas nao e ideal para producao quando ha token privado envolvido. Variaveis `VITE_*` sao expostas no bundle do frontend. Por isso, a migracao para um backend Spring Boot e o proximo passo correto.
-
-## Arquitetura Planejada
-
-Na arquitetura futura, o frontend deixa de conhecer o GitHub token:
-
-```text
-Browser
-  |
-  | GET /api/projects
-  v
-Spring Boot Backend
-  |
-  | GitHub token protegido no servidor
-  | Chamada server-side para GitHub API
-  | Cache, filtros e DTOs
-  v
-GitHub REST API
+    Page->>Api: getMyRepos()
+    Api->>GH: GET /user/repos
+    GH-->>Api: Repositorios
+    loop Repositorios retornados
+        Api->>GH: GET repo.languages_url
+        GH-->>Api: Linguagens
+    end
+    Api->>Api: Filtra topic "featured"
+    Api-->>Page: Projetos normalizados
+    Page-->>Page: Renderiza ProjectCard
 ```
 
-Responsabilidades planejadas do backend:
-
-- Guardar o token do GitHub fora do frontend.
-- Centralizar chamadas externas para GitHub.
-- Aplicar filtros de destaque no servidor.
-- Normalizar os dados em DTOs estaveis.
-- Reduzir chamadas repetidas com cache.
-- Tratar erros e limites de rate limit.
-- Criar base para futuras features, como formulario de contato, analytics ou painel admin.
-
-Endpoint esperado para o frontend:
-
-```text
-GET /api/projects
-```
-
-Resposta esperada:
-
-```json
-[
-  {
-    "id": 123,
-    "name": "project-name",
-    "description": "Project description",
-    "url": "https://github.com/user/project-name",
-    "homepage": "https://project-demo.vercel.app",
-    "languages": {
-      "JavaScript": 12000,
-      "CSS": 3000
-    },
-    "topics": ["featured"]
-  }
-]
-```
-
-## Estrutura do Projeto
+## Estrutura
 
 ```text
 frontend/
 ├── public/
-│   ├── page-icon.png
-│   └── page-icon-original.png
 ├── src/
 │   ├── api/
 │   │   └── api.js
 │   ├── assets/
-│   │   ├── about-me.png
-│   │   ├── background.jpg
-│   │   ├── background-2.jpg
-│   │   ├── contact.png
-│   │   ├── footer.jpg
-│   │   ├── presentation-background.mp4
-│   │   ├── projects-video.mp4
-│   │   └── stacks-background.jpg
 │   ├── components/
 │   │   ├── about/
 │   │   ├── Footer/
@@ -182,88 +94,58 @@ frontend/
 │   │   ├── Orb.jsx
 │   │   └── SpotlightCard.jsx
 │   ├── App.jsx
-│   ├── index.css
 │   └── main.jsx
 ├── vercel.json
 ├── vite.config.js
-├── jsconfig.json
 └── package.json
 ```
 
-## Rotas
+## Integracao Atual com GitHub
 
-| Rota | Pagina | Descricao |
-| --- | --- | --- |
-| `/` | `Home` | Apresentacao, sobre mim e stacks/servicos |
-| `/projects` | `Projects` | Hero de projetos e repositorios do GitHub |
-| `/contact` | `Contact` | Links de contato |
+Arquivo principal:
 
-## Componentes Principais
+```text
+src/api/api.js
+```
 
-| Componente | Responsabilidade |
-| --- | --- |
-| `NavBar` | Navegacao principal |
-| `Presentation` | Hero da Home com background visual `Beams` |
-| `About` | Secao sobre o desenvolvedor |
-| `Stacks` | Stacks e servicos com cards interativos |
-| `ProjectsPanel` | Hero da pagina de projetos com `Orb` responsivo |
-| `ProjectsItems` | Busca repositorios e controla loading/empty state |
-| `ProjectCard` | Renderiza cada repositorio retornado pela API |
-| `Footer` | Rodape visual do site |
-| `Beams`, `Orb`, `SpotlightCard` | Efeitos visuais inspirados em React Bits |
+O frontend:
+
+1. Le `VITE_GITHUB_TOKEN`.
+2. Busca repositorios em `https://api.github.com/user/repos`.
+3. Busca linguagens pelo `languages_url` de cada repositorio.
+4. Monta um objeto simplificado para a UI.
+5. Filtra apenas repositorios com topic `featured`.
 
 ## Variaveis de Ambiente
 
-Crie um arquivo `.env` na raiz do frontend:
+Crie um arquivo `.env` dentro de `frontend/`:
 
 ```env
 VITE_GITHUB_TOKEN=seu_token_do_github
 ```
 
-Para a integracao atual, o token precisa ter permissao suficiente para listar os repositorios desejados. Caso queira exibir apenas repositorios publicos, a arquitetura pode ser ajustada para usar endpoints publicos sem token.
-
-## Como Marcar Projetos em Destaque
-
-No GitHub, adicione o topic abaixo aos repositorios que devem aparecer na pagina de projetos:
-
-```text
-featured
-```
-
-Somente repositorios com esse topic sao renderizados em `ProjectsItems`.
-
-## Como Rodar Localmente
-
-Instale as dependencias:
-
-```bash
-npm install
-```
-
-Inicie o servidor de desenvolvimento:
-
-```bash
-npm run dev
-```
-
-Acesse:
-
-```text
-http://localhost:5173
-```
+Importante: qualquer variavel `VITE_*` e exposta no bundle final. Por isso, o uso desse token deve ser removido quando o backend assumir a integracao.
 
 ## Scripts
 
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
 | Comando | Descricao |
 | --- | --- |
-| `npm run dev` | Inicia o Vite em modo desenvolvimento |
+| `npm run dev` | Inicia o Vite em desenvolvimento |
 | `npm run build` | Gera build de producao |
-| `npm run preview` | Serve localmente o build de producao |
-| `npm run lint` | Executa ESLint no projeto |
+| `npm run preview` | Serve o build localmente |
+| `npm run lint` | Executa ESLint |
 
 ## Deploy
 
-O projeto possui `vercel.json` com rewrite para SPA:
+O arquivo `vercel.json` configura rewrite para SPA:
 
 ```json
 {
@@ -276,23 +158,24 @@ O projeto possui `vercel.json` com rewrite para SPA:
 }
 ```
 
-Isso permite acessar rotas como `/projects` e `/contact` diretamente no deploy da Vercel.
+Isso permite acessar diretamente `/projects` e `/contact` no deploy da Vercel.
 
-## Roadmap
+## Migracao Para Backend
 
-- Criar backend Spring Boot.
-- Mover token do GitHub para o backend.
-- Criar endpoint `GET /api/projects`.
-- Implementar cache para reduzir chamadas ao GitHub.
-- Padronizar respostas e erros via DTOs.
-- Atualizar frontend para consumir o backend proprio.
-- Adicionar formulario de contato com envio pelo backend.
-- Melhorar observabilidade e tratamento de rate limit.
-- Preparar deploy fullstack.
+Quando o backend estiver pronto, o frontend deve trocar:
 
-## Autor
+```text
+React -> GitHub REST API
+```
 
-Lucas Garcia
+por:
 
-Software Engineering Student  
-Backend | Frontend | Data Systems | AI Applications
+```text
+React -> Spring Boot API -> GitHub REST API
+```
+
+Endpoint planejado:
+
+```text
+GET /api/projects
+```
