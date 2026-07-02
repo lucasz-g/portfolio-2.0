@@ -6,11 +6,11 @@ import SoftAurora from '../../react-bits/SoftAurora';
 export const Presentation = () => {
     return (
         <section id="home" className="presentation-section">
-            {/* <video className="presentation-video" autoPlay muted loop playsInline>
+            <video className="presentation-video" autoPlay muted loop playsInline>
                 <source src={presentationBackground} type="video/mp4" />
-            </video> */}
+            </video>
 
-            <div className="presentation-background">
+            {/* <div className="presentation-background">
                 <SoftAurora
                     speed={0.6}
                     scale={1.5}
@@ -27,7 +27,7 @@ export const Presentation = () => {
                 enableMouseInteraction
                 mouseInfluence={1}
             />
-            </div>
+            </div> */}
 
             <div className="role-name-div">
                 <p className="role">software engineer</p>
