@@ -18,6 +18,11 @@ const contactLinks = [
         value: "github.com/lucasz-g",
         href: "https://github.com/lucasz-g",
     },
+    {
+        label: "WhatsApp",
+        value: "+55 11 959665055",
+        href: "https://wa.me/5511959665055",
+    }
 ]
 
 export const Contact = () => {
