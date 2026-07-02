@@ -3,6 +3,7 @@ import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 import stacksBackground from "../../assets/stacks-background.jpg"
 import "./Stacks.css"
 import { Link } from "react-router"
+import SpotlightCard from "../../react-bits/SpotlightCard"
 
 const stackItems = [
     "Spring Boot",
@@ -42,7 +43,7 @@ export const Stacks = () => {
 
             <div id="stacks-services" className="stacks-content-panel">
                 <div className="stacks-content-grid">
-                    <div className="stacks-card">
+                    <SpotlightCard className="stacks-card" spotlightColor="rgba(255, 255, 255, 0.34)">
                         <Kicker titulo="Stacks" />
                         <h3>Tools I use to build products</h3>
                         <ul className="stacks-list">
@@ -51,9 +52,9 @@ export const Stacks = () => {
                                 <li key={stack}>{stack}</li>
                             ))}
                         </ul>
-                    </div>
+                    </SpotlightCard>
 
-                    <div className="stacks-card">
+                    <SpotlightCard className="stacks-card" spotlightColor="rgba(255, 255, 255, 0.34)">
                         <Kicker titulo="Services" />
                         <h3>What I can help ship</h3>
                         <ul className="stacks-list">
@@ -71,7 +72,7 @@ export const Stacks = () => {
                                 </svg>
                             </Link>
                         </div>
-                    </div>
+                    </SpotlightCard>
                 </div>
             </div>
         </section>

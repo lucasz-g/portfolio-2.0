@@ -1,10 +1,11 @@
-import "./ProjectCard.css"; 
+import SpotlightCard from "../../react-bits/SpotlightCard";
+import "./ProjectCard.css";
 
 export const ProjectCard = ({ repo }) => {
     const languages = Object.keys(repo.languages ?? {});
 
     return (
-        <div className="project-card">
+        <SpotlightCard className="project-card" spotlightColor="rgba(255, 255, 255, 0.16)">
             <div className="project-card-content">
                 <h3>{repo.name}</h3>
                 <p className="project-card-description">
@@ -33,6 +34,6 @@ export const ProjectCard = ({ repo }) => {
                     </a>
                 )}
             </div>
-        </div>
+        </SpotlightCard>
     );
 };
