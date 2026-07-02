@@ -9,6 +9,14 @@
     color: white;
 }
 
+.presentation-background {
+    position: relative;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
 .presentation-video {
     position: absolute;
     inset: 0;
