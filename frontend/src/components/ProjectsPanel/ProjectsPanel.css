@@ -1,5 +1,6 @@
 
 .projects-hero {
+    position: relative;
     width: min(1220px, 100%);
     min-height: calc(100vh - 11rem);
     height: 100vh;
@@ -7,36 +8,50 @@
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     align-items: center;
-    gap: clamp(3rem, 7vw, 7rem);
+    gap: clamp(2rem, 4vw, 5rem);
+    isolation: isolate;
 }
 
-.projects-video-frame {
+.projects-orb-frame {
     position: relative;
-    width: 100%;
-    height: 100%;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(82vw, 860px);
+    height: min(82vw, 860px);
     min-width: 0;
-    aspect-ratio: 4 / 5;
-    max-width: 560px;
-    justify-self: center;
+    max-width: none;
+    justify-self: end;
+    margin-left: clamp(-7rem, -6vw, -3rem);
+    margin-right: clamp(-12rem, -9vw, -5rem);
     overflow: hidden;
-    border-radius: 8px;
+    background: transparent;
+    pointer-events: auto;
+    opacity: 0.98;
+    filter: saturate(1.12) contrast(1.05);
+    -webkit-mask-image: radial-gradient(circle at 52% 50%, #000 0 48%, rgba(0, 0, 0, 0.84) 62%, rgba(0, 0, 0, 0.3) 76%, transparent 91%);
+    mask-image: radial-gradient(circle at 52% 50%, #000 0 48%, rgba(0, 0, 0, 0.84) 62%, rgba(0, 0, 0, 0.3) 76%, transparent 91%);
+}
+
+.projects-orb-frame .orb-container {
+    width: 132%;
+    height: 132%;
+    transform: translateX(4%) scale(1.06);
+}
+
+.projects-orb-fallback {
+    position: absolute;
+    inset: 0;
     background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.12), transparent 46%),
-        #000;
-}
-
-.projects-video {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.projects-video-paused {
-    opacity: 0.82;
+        radial-gradient(circle at 50% 50%, rgba(255, 92, 122, 0.26), transparent 42%),
+        radial-gradient(circle at 58% 44%, rgba(0, 255, 209, 0.16), transparent 36%),
+        transparent;
 }
 
 .projects-copy {
+    position: relative;
+    z-index: 2;
     min-width: 0;
     max-width: 680px;
 }
@@ -78,9 +93,15 @@
         gap: 2.5rem;
     }
 
-    .projects-video-frame {
-        max-width: 680px;
+    .projects-orb-frame {
+        width: calc(100vw + 5rem);
+        height: calc(100vw + 5rem);
+        max-width: none;
+        justify-self: center;
+        margin: -1rem -2.5rem -2rem;
         order: 2;
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0 48%, rgba(0, 0, 0, 0.7) 68%, transparent 90%);
+        mask-image: radial-gradient(circle at 50% 50%, #000 0 48%, rgba(0, 0, 0, 0.7) 68%, transparent 90%);
     }
 
     .projects-copy {
@@ -103,7 +124,16 @@
         line-height: 1.65;
     }
 
-    .projects-video-frame {
-        aspect-ratio: 1 / 1.15;
+    .projects-orb-frame {
+        width: calc(100vw + 4rem);
+        height: calc(100vw + 4rem);
+        margin-right: -1.5rem;
+        margin-left: -1.5rem;
+    }
+
+    .projects-orb-frame .orb-container {
+        width: 138%;
+        height: 138%;
+        transform: translateX(2%) scale(1.06);
     }
 }
