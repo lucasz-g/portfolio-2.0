@@ -1,33 +1,27 @@
-import presentationBackground from "../../assets/presentation-background.mp4"
+import { lazy, Suspense } from "react"
 import { ScrollArrow } from "../scrollArrow/ScrollArrow"
 import "./presentation.css"
-import SoftAurora from '../../react-bits/SoftAurora';
+
+const beamsModule = import("../../react-bits/Beams")
+const Beams = lazy(() => beamsModule)
 
 export const Presentation = () => {
     return (
         <section id="home" className="presentation-section">
-            <video className="presentation-video" autoPlay muted loop playsInline>
-                <source src={presentationBackground} type="video/mp4" />
-            </video>
-
-            {/* <div className="presentation-background">
-                <SoftAurora
-                    speed={0.6}
-                    scale={1.5}
-                    brightness={1}
-                    color1="#f7f7f7"
-                    color2="#e100ff"
-                noiseFrequency={2.5}
-                noiseAmplitude={1}
-                bandHeight={0.5}
-                bandSpread={1}
-                octaveDecay={0.1}
-                layerOffset={0}
-                colorSpeed={1}
-                enableMouseInteraction
-                mouseInfluence={1}
-            />
-            </div> */}
+            <div className="presentation-background" aria-hidden="true">
+                <Suspense fallback={<div className="presentation-background-fallback" />}>
+                    <Beams
+                        beamWidth={2}
+                        beamHeight={15}
+                        beamNumber={10}
+                        lightColor="#f7f7f7"
+                        speed={4}
+                        noiseIntensity={1.15}
+                        scale={0.16}
+                        rotation={30}
+                    />
+                </Suspense>
+            </div>
 
             <div className="role-name-div">
                 <p className="role">software engineer</p>
