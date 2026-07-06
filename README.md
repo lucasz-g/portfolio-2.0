@@ -167,6 +167,7 @@ Backend:
 
 ```bash
 cd backend
+export GITHUB_TOKEN="seu_token_do_github"
 ./mvnw spring-boot:run
 ```
 
@@ -174,8 +175,11 @@ No Windows PowerShell:
 
 ```powershell
 cd backend
+$env:GITHUB_TOKEN="seu_token_do_github"
 .\mvnw.cmd spring-boot:run
 ```
+
+O token do GitHub fica fora do Git. O backend le `GITHUB_TOKEN` por variavel de ambiente e faz o bind para `GitHubProperties`, usado pelo `GitHubClient`.
 
 ## Roadmap Fullstack
 

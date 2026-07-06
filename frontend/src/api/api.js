@@ -7,6 +7,7 @@ export async function getMyRepos() {
   let allRepos = [];
 
   try {
+    // Retorna todos os repositórios do usuário autenticado.
     const repos = await axios.get("https://api.github.com/user/repos", {
       headers: {
         Authorization: `Bearer ${TOKEN}`, // Token do meu user GitHub
