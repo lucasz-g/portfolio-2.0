@@ -85,6 +85,18 @@ flowchart LR
     frontend --> cards[Project Cards]
 ```
 
+Responsabilidades principais:
+
+- `GitHubClient`: integra com a GitHub API, monta headers, token, query params e paginacao, retornando os dados brutos do GitHub.
+- `ProjectService`: decide o que fazer com esses dados, aplicando filtros, ordenacao, regras da aplicacao e transformacao para DTOs.
+- `ProjectController`: expoe os dados tratados para o frontend por meio da API REST propria.
+
+Resumo da separacao:
+
+```text
+Client busca. Service decide. Controller expoe.
+```
+
 Fluxo planejado:
 
 ```mermaid
@@ -189,6 +201,46 @@ O token do GitHub fica fora do Git. O backend le `GITHUB_TOKEN` por variavel de 
 - Adicionar cache para reduzir chamadas ao GitHub.
 - Padronizar respostas e tratamento de erros.
 - Preparar deploy fullstack.
+
+## Fase 3 - Persistencia e Sincronizacao
+
+Depois que o backend estiver expondo a API de projetos/repositorios, a proxima evolucao planejada e persistir os projetos destacados em PostgreSQL. A ideia e transformar a integracao com GitHub em um processo de sincronizacao, mantendo o frontend consumindo apenas a API propria.
+
+Arquitetura planejada para essa fase:
+
+```mermaid
+flowchart LR
+    github[GitHub REST API]
+    client[GitHubClient]
+    sync[RepoSyncService]
+    db[(PostgreSQL)]
+    service[RepoService]
+    controller[RepoController]
+    frontend[Frontend Vercel]
+
+    github --> client
+    client --> sync
+    sync --> db
+    db --> service
+    service --> controller
+    controller --> frontend
+```
+
+Objetivo da fase:
+
+- Buscar repositorios no GitHub.
+- Filtrar projetos com topic `featured`.
+- Salvar ou atualizar os projetos no PostgreSQL.
+- Expor a API propria lendo do banco, nao diretamente do GitHub.
+- Evitar duplicacao usando o `id` do GitHub como referencia externa.
+- Permitir que o frontend continue desacoplado, consumindo somente o backend.
+
+Estrategia inicial:
+
+- Rodar a sincronizacao quando o backend subir.
+- Se a API do GitHub falhar, registrar o erro e manter o backend funcionando.
+- Depois evoluir para sincronizacao agendada com `@Scheduled`.
+- Futuramente adicionar endpoint manual como `POST /api/repos/sync`.
 
 ## Autor
 

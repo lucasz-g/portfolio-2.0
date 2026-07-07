@@ -43,15 +43,43 @@ Ainda nao existe:
 
 ```mermaid
 flowchart TD
-    frontend[Frontend React] --> controller[ProjectController]
-    controller --> service[ProjectService]
+    frontend[Frontend React] --> controller[RepoController]
+    controller --> service[RepoService]
     service --> cache[(Cache opcional)]
     service --> client[GitHubClient]
     client --> github[GitHub REST API]
-    service --> mapper[ProjectMapper]
-    mapper --> dto[ProjectResponse DTO]
+    service --> mapper[RepoMapper]
+    mapper --> dto[RepoResponse DTO]
     dto --> controller
     controller --> frontend
+```
+
+## Responsabilidades das Camadas
+
+Separacao principal da integracao com GitHub:
+
+```text
+GitHubClient
+- Fala com a GitHub API.
+- Monta base URL, headers, token, query params e paginacao.
+- Retorna os dados brutos vindos do GitHub.
+
+RepoService
+- Usa o GitHubClient.
+- Aplica regras da aplicacao.
+- Filtra, ordena e transforma os dados.
+- Entrega uma resposta limpa para Controller/Frontend.
+
+RepoController
+- Expoe os endpoints REST do backend.
+- Recebe a chamada do frontend.
+- Retorna os DTOs produzidos pela camada de service.
+```
+
+Frase guia da arquitetura:
+
+```text
+Client busca. Service decide. Controller expoe.
 ```
 
 ## Fluxo Planejado
@@ -59,13 +87,13 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant FE as Frontend
-    participant Controller as ProjectController
-    participant Service as ProjectService
+    participant Controller as RepoController
+    participant Service as RepoService
     participant Client as GitHubClient
     participant GH as GitHub REST API
 
-    FE->>Controller: GET /api/projects
-    Controller->>Service: findFeaturedProjects()
+    FE->>Controller: GET /api/repos
+    Controller->>Service: findFeaturedRepos()
     Service->>Client: fetchRepositories()
     Client->>GH: GET /user/repos
     GH-->>Client: Repositorios
@@ -113,21 +141,21 @@ src/main/java/br/com/garcia/backend/portfolio/
 │   ├── CorsConfig.java
 │   └── SecurityConfig.java
 ├── controller/
-│   └── ProjectController.java
+│   └── RepoController.java
 ├── dto/
-│   └── ProjectResponse.java
+│   └── RepoResponse.java
 ├── client/
 │   └── GitHubClient.java
 ├── service/
-│   └── ProjectService.java
+│   └── RepoService.java
 └── mapper/
-    └── ProjectMapper.java
+    └── RepoMapper.java
 ```
 
 ## Contrato Planejado
 
 ```http
-GET /api/projects
+GET /api/repo
 ```
 
 Resposta:
@@ -288,9 +316,78 @@ Em Linux/macOS:
 
 ## Proximos Passos
 
-1. Criar `ProjectController`.
-2. Criar `ProjectService` para filtro por topic `featured`.
+1. Criar `RepoController`.
+2. Criar `RepoService` para filtro por topic `featured`.
 3. Criar DTOs para resposta ao frontend.
 4. Configurar CORS para o frontend.
 5. Adicionar cache para reduzir chamadas externas.
-6. Atualizar o frontend para consumir `GET /api/projects`.
+6. Atualizar o frontend para consumir `GET /api/repos`.
+
+## Fase 3 - PostgreSQL como Fonte de Leitura
+
+Apos a primeira versao do backend consumir a GitHub API e expor `GET /api/repos`, a proxima fase planejada e persistir os projetos destacados em PostgreSQL.
+
+O frontend nao deve consumir o banco diretamente. Mesmo com PostgreSQL, o fluxo continua passando pelo backend:
+
+```text
+GitHub API -> Backend Spring -> PostgreSQL -> Backend Spring API -> Frontend
+```
+
+Arquitetura alvo dessa fase:
+
+```mermaid
+flowchart TD
+    client[GitHubClient] --> sync[RepoSyncService]
+    sync --> repository[RepoRepository]
+    repository --> db[(PostgreSQL)]
+    db --> repository
+    repository --> service[RepoService]
+    service --> dto[RepoResponseDTO]
+    dto --> controller[RepoController]
+    controller --> frontend[Frontend]
+```
+
+### Objetivo
+
+- Buscar repositorios no GitHub.
+- Filtrar apenas projetos com topic `featured`.
+- Salvar ou atualizar esses projetos no PostgreSQL.
+- Fazer `GET /api/repos` ler do banco.
+- Reduzir dependencia de chamadas ao GitHub durante o uso normal do frontend.
+- Praticar uma stack backend mais completa com Spring, JPA e PostgreSQL.
+
+### Novas Camadas Necessarias
+
+```text
+entity/
+  RepoEntity.java
+
+repository/
+  RepoRepository.java
+
+service/
+  RepoSyncService.java
+  RepoService.java
+```
+
+Papel de cada camada:
+
+- `RepoEntity`: representa a tabela de repositorios/projetos no PostgreSQL.
+- `RepoRepository`: faz acesso ao banco com Spring Data JPA.
+- `RepoSyncService`: busca dados no GitHub, filtra `featured` e grava no banco.
+- `RepoService`: busca projetos persistidos e monta DTOs para o controller.
+
+### Estrategia de Sincronizacao
+
+Primeira versao:
+
+- Rodar a sincronizacao quando o backend iniciar.
+- Usar o `id` do GitHub como identificador externo para evitar duplicidade.
+- Se a API do GitHub falhar, logar o erro e manter o backend no ar.
+
+Evolucao futura:
+
+- Rodar sincronizacao agendada com `@Scheduled`.
+- Criar endpoint manual `POST /api/repos/sync`.
+- Salvar `lastSyncedAt` para acompanhar quando o projeto foi atualizado.
+- Adicionar tratamento de erro e logs mais claros para falhas da GitHub API.

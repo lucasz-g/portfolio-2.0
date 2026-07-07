@@ -32,28 +32,38 @@ public class GitHubClient {
     // especificada
     // Retorno é uma lista de mapas (JSON/Dictionary) com os dados dos repositórios
     public List<Map<String, Object>> getReposByPage(int page) {
-        return restClient.get()
-                // Constrói a URI para a requisição, incluindo os parâmetros de consulta para
-                // visibilidade, afiliação, número de itens por página e número da página
-                .uri(uriBuilder -> uriBuilder
-                        .path("/user/repos")
-                        .queryParam("visibility", "all")
-                        .queryParam("affiliation", "owner")
-                        .queryParam("per_page", 100)
-                        .queryParam("page", page)
-                        .build())
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {
-                });
+        try {
+            return restClient.get()
+                    // Constrói a URI para a requisição, incluindo os parâmetros de consulta para
+                    // visibilidade, afiliação, número de itens por página e número da página
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/user/repos")
+                            .queryParam("visibility", "all")
+                            .queryParam("affiliation", "owner")
+                            .queryParam("per_page", 100)
+                            .queryParam("page", page)
+                            .build())
+                    .retrieve()
+                    // Converte a resposta da API para uma lista de mapas (JSON/Dictionary)
+                    .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                    });
+        } catch (Exception e) {
+            // Em caso de erro, imprime a mensagem de erro e retorna null
+            System.err.println("Erro ao buscar repositórios na página " + page + ": " + e.getMessage());
+            return null;
+        }
+
     }
 
     public List<Map<String, Object>> getAllRepos() {
         int page = 1;
         // Inicializa uma lista para armazenar os repositórios da página atual da API
-        // A lista foi criada dentro do método para evitar problemas de concorrência em chamadas simultâneas
+        // A lista foi criada dentro do método para evitar problemas de concorrência em
+        // chamadas simultâneas
         List<Map<String, Object>> apiRepos;
         // Inicializa uma lista para armazenar todos os repositórios do usuário
-        // A lista foi criada dentro do método para evitar problemas de concorrência em chamadas simultâneas
+        // A lista foi criada dentro do método para evitar problemas de concorrência em
+        // chamadas simultâneas
         List<Map<String, Object>> allMyRepos = new ArrayList<>();
 
         while (true) {
@@ -70,7 +80,13 @@ public class GitHubClient {
             page++;
 
         }
-        
+
         return allMyRepos;
     }
+
+    public Map<String, Long> getLanguages(String languagesUrl) {
+        return restClient.get().uri(languagesUrl).retrieve().body(new ParameterizedTypeReference<Map<String, Long>>() {
+        });
+    }
+
 }
