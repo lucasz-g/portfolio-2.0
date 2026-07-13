@@ -48,7 +48,7 @@ public class GitHubClientTest {
 
         // Limitar a quantidade de repositórios exibidos
         int limit = 0;
-        while (limit <= 5) {
+        while (limit < 5) {
             allRepos.forEach(repo -> {
                 repo.forEach((key, value) -> System.out.println(key + ": " + value));
             });

@@ -12,7 +12,7 @@ Este backend é funcional, mas não é uma dependência do frontend publicado. E
 - Filtro pelo topic `featured` antes da consulta de linguagens.
 - DTO e mapper para controlar o contrato de saída.
 - Spring Security com rotas públicas explícitas.
-- Swagger UI e descrição OpenAPI.
+- Swagger UI e descrição OpenAPI com metadados centralizados em `OpenApiConfig`.
 - Exceção própria para falhas do GitHub.
 - Resposta de erro padronizada pelo `GlobalExceptionHandler`.
 - Teste unitário do fluxo de service.
@@ -25,6 +25,8 @@ Em uma medição manual durante o desenvolvimento, filtrar os repositórios ante
 ```mermaid
 flowchart LR
     consumer[Postman / Swagger / cliente HTTP] --> security[SecurityFilterChain]
+    openapi[OpenApiConfig] --> docs[Swagger UI / OpenAPI]
+    docs --> consumer
     security --> controller[RepoController]
     controller --> service[RepoService]
     service --> client[GitHubClient]
@@ -167,6 +169,7 @@ src/main/java/br/com/garcia/backend/portfolio/
 │   └── GitHubClient.java
 ├── config/
 │   ├── GitHubProperties.java
+│   ├── OpenApiConfig.java
 │   └── SecurityConfig.java
 ├── controller/
 │   └── RepoController.java
@@ -209,6 +212,16 @@ export GITHUB_TOKEN="seu_token_do_github"
 O `.env` local está ignorado pelo Git e `.env.example` documenta somente o nome esperado da variável.
 
 ## Segurança e documentação
+
+O `OpenApiConfig` centraliza as informações gerais apresentadas no Swagger:
+
+| Campo | Valor |
+| --- | --- |
+| Título | `Portfolio GitHub API` |
+| Versão | `1.0` |
+| Descrição | API intermediária para consulta e processamento dos projetos em destaque do GitHub |
+
+O controller complementa essa definição geral com `@Operation`, descrevendo individualmente o endpoint de repositórios destacados.
 
 Estas rotas são públicas:
 
