@@ -1,147 +1,123 @@
 # Portfolio 2.0
 
-Monorepo do portfolio web de Lucas Garcia. O projeto combina um frontend moderno em React/Vite com um backend Spring Boot em construcao, planejado para centralizar a comunicacao com a GitHub API.
+Monorepo do portfólio web de Lucas Garcia. O projeto reúne duas aplicações independentes que consultam a GitHub REST API:
 
-## Modulos
+- um frontend React/Vite publicado como site;
+- um backend Spring Boot criado para praticar e demonstrar integração, separação em camadas, segurança, documentação OpenAPI e testes.
 
-```text
-portfolio-2.0/
-├── frontend/   # React + Vite, UI do portfolio e integracao atual com GitHub API
-└── backend/    # Spring Boot, futuro gateway da GitHub API
-```
+O frontend não depende do backend para funcionar. Essa é uma decisão arquitetural do projeto: o site continua consultando o GitHub diretamente para manter o deploy simples e evitar que a disponibilidade de um backend próprio se torne requisito para exibir os projetos.
 
-| Modulo | Status | README |
+## Módulos
+
+| Módulo | Estado atual | README |
 | --- | --- | --- |
-| `frontend` | Implementado e integrado diretamente com GitHub API | [`frontend/README.md`](frontend/README.md) |
-| `backend` | Scaffold Spring Boot criado, API ainda em desenvolvimento | [`backend/README.md`](backend/README.md) |
+| `frontend` | Funcional, integrado diretamente ao GitHub e preparado para Vercel | [Documentação do frontend](frontend/README.md) |
+| `backend` | Primeira versão funcional da API Spring Boot | [Documentação do backend](backend/README.md) |
 
-## Visao Geral
+## Funcionalidades
 
-O portfolio apresenta:
+### Frontend
 
-- Home com apresentacao, sobre mim, stacks e servicos.
-- Pagina de projetos com repositorios carregados dinamicamente.
-- Pagina de contato.
-- Efeitos visuais com componentes React Bits/WebGL.
-- Deploy frontend preparado para Vercel.
-- Backend Spring Boot planejado para proteger credenciais e organizar a integracao com GitHub.
+- Home com apresentação, sobre, stacks e serviços.
+- Página de projetos com repositórios marcados com o topic `featured`.
+- Página de contato.
+- Componentes visuais React Bits/WebGL.
+- Layout responsivo e deploy SPA na Vercel.
 
-## Arquitetura Atual
+### Backend
 
-Hoje o frontend acessa a GitHub API diretamente pelo browser.
+- Integração autenticada com a GitHub REST API usando `RestClient`.
+- Paginação dos repositórios do usuário.
+- Filtro local pelo topic `featured` antes das chamadas de linguagens.
+- Mapeamento dos dados externos para `RepoResponseDTO`.
+- Endpoint público `GET /api/v1/repos/featured`.
+- Swagger/OpenAPI.
+- Spring Security com liberação explícita da API e da documentação.
+- Resposta padronizada para falhas da integração com GitHub.
+- Testes unitários e testes reais mantidos como validação manual.
 
-```mermaid
-flowchart LR
-    user[Usuario] --> browser[Browser]
-    browser --> react[Frontend React + Vite]
-    react --> axios[Axios]
-    axios --> github[GitHub REST API]
-    github --> repos[Repositorios]
-    repos --> filter[Filtro topic: featured]
-    filter --> cards[Project Cards]
-```
+## Decisão arquitetural
 
-Fluxo atual:
-
-```mermaid
-sequenceDiagram
-    participant User as Usuario
-    participant UI as React Frontend
-    participant API as GitHub REST API
-
-    User->>UI: Acessa /projects
-    UI->>API: GET /user/repos
-    API-->>UI: Lista de repositorios
-    loop Para cada repositorio
-        UI->>API: GET languages_url
-        API-->>UI: Linguagens do repositorio
-    end
-    UI->>UI: Filtra topic "featured"
-    UI-->>User: Renderiza cards de projetos
-```
-
-### Limite da Arquitetura Atual
-
-O token atual e lido como `VITE_GITHUB_TOKEN`. Variaveis `VITE_*` entram no bundle do frontend, entao essa abordagem e temporaria e deve ser substituida pelo backend.
-
-## Arquitetura Alvo
-
-Na arquitetura final, o frontend chamara apenas a API propria. O backend Spring Boot sera responsavel por chamar o GitHub, proteger o token, normalizar dados e aplicar regras de cache/filtro.
+As duas aplicações compartilham o GitHub como fonte de dados, mas não possuem dependência de execução entre si.
 
 ```mermaid
 flowchart LR
-    user[Usuario] --> browser[Browser]
-    browser --> frontend[Frontend React + Vite]
-    frontend --> backend[Backend Spring Boot]
-    backend --> service[Project Service]
-    service --> cache[(Cache opcional)]
-    service --> client[GitHub Client]
-    client --> github[GitHub REST API]
-    github --> client
-    client --> service
-    service --> dto[ProjectResponse DTO]
-    dto --> backend
-    backend --> frontend
-    frontend --> cards[Project Cards]
+    user[Usuário] --> frontend[Frontend React + Vite]
+    frontend --> github[GitHub REST API]
+    github --> frontend
+    frontend --> cards[Cards de projetos]
+
+    consumer[Postman / Swagger / cliente da API] --> controller[RepoController]
+    controller --> service[RepoService]
+    service --> client[GitHubClient]
+    client --> github
+    service --> mapper[RepoMapper]
+    mapper --> dto[RepoResponseDTO]
+    dto --> controller
 ```
 
-Responsabilidades principais:
+Essa separação atende a dois objetivos:
 
-- `GitHubClient`: integra com a GitHub API, monta headers, token, query params e paginacao, retornando os dados brutos do GitHub.
-- `ProjectService`: decide o que fazer com esses dados, aplicando filtros, ordenacao, regras da aplicacao e transformacao para DTOs.
-- `ProjectController`: expoe os dados tratados para o frontend por meio da API REST propria.
+- o frontend continua publicável sem contratar ou manter infraestrutura para o backend;
+- o backend evolui como projeto técnico próprio, sem colocar a disponibilidade do portfólio em risco.
 
-Resumo da separacao:
-
-```text
-Client busca. Service decide. Controller expoe.
-```
-
-Fluxo planejado:
+## Sequência do frontend
 
 ```mermaid
 sequenceDiagram
-    participant User as Usuario
-    participant UI as React Frontend
-    participant BE as Spring Boot API
+    actor User as Usuário
+    participant UI as Frontend React
+    participant API as api.js
     participant GH as GitHub REST API
 
     User->>UI: Acessa /projects
-    UI->>BE: GET /api/projects
-    BE->>BE: Valida cache e regras
-    BE->>GH: GET /user/repos
-    GH-->>BE: Repositorios
-    BE->>GH: GET languages_url
-    GH-->>BE: Linguagens
-    BE->>BE: Filtra topic "featured" e monta DTO
-    BE-->>UI: Lista de projetos
-    UI-->>User: Renderiza cards
+    UI->>API: getMyRepos()
+    API->>GH: GET /user/repos
+    GH-->>API: Repositórios
+    loop Repositórios retornados
+        API->>GH: GET languages_url
+        GH-->>API: Linguagens
+    end
+    API->>API: Normaliza e filtra topic featured
+    API-->>UI: Projetos em destaque
+    UI-->>User: Renderiza os cards
 ```
 
-## Contrato Planejado
+## Sequência do backend
 
-```http
-GET /api/projects
+```mermaid
+sequenceDiagram
+    actor Consumer as Cliente da API
+    participant Controller as RepoController
+    participant Service as RepoService
+    participant Client as GitHubClient
+    participant GH as GitHub REST API
+
+    Consumer->>Controller: GET /api/v1/repos/featured
+    Controller->>Service: getFeaturedRepos()
+    Service->>Client: getAllRepos()
+    Client->>GH: GET /user/repos por página
+    GH-->>Client: Repositórios
+    Client-->>Service: Dados brutos
+    Service->>Service: Filtra topic featured
+    loop Somente repositórios destacados
+        Service->>Client: getLanguages(languages_url)
+        Client->>GH: GET languages_url
+        GH-->>Client: Linguagens
+        Client-->>Service: Mapa de linguagens
+    end
+    Service->>Service: Mapeia para RepoResponseDTO
+    Service-->>Controller: Lista de DTOs
+    Controller-->>Consumer: 200 OK
 ```
 
-Resposta esperada:
+## Segurança da integração direta
 
-```json
-[
-  {
-    "id": 123,
-    "name": "project-name",
-    "description": "Project description",
-    "url": "https://github.com/user/project-name",
-    "homepage": "https://project-demo.vercel.app",
-    "languages": {
-      "JavaScript": 12000,
-      "CSS": 3000
-    },
-    "topics": ["featured"]
-  }
-]
-```
+O frontend atualmente lê `VITE_GITHUB_TOKEN`. Variáveis `VITE_*` são incorporadas ao bundle e podem ser vistas por quem acessa o site; portanto, esse token não deve ser tratado como segredo.
+
+Para manter o frontend independente com menor risco, uma evolução possível é consultar somente repositórios públicos por um endpoint público do GitHub, sem token. Enquanto o token for usado no navegador, ele deve possuir o menor conjunto possível de permissões e nunca dar acesso de escrita.
+
+No backend, `GITHUB_TOKEN` é uma variável do processo e não é devolvida ao consumidor da API.
 
 ## Stack
 
@@ -151,23 +127,23 @@ Resposta esperada:
 - Vite
 - React Router
 - Axios
-- CSS
+- Tailwind CSS
 - Three.js, React Three Fiber, Drei e OGL
 
 ### Backend
 
 - Java 21
-- Spring Boot
-- Spring Web MVC
+- Spring Boot 4.1
+- Spring Web MVC e RestClient
 - Spring Security
-- Spring Data JPA
-- RestClient
-- H2 e PostgreSQL
-- Lombok
+- Springdoc OpenAPI
+- JUnit e Mockito
+- Maven Wrapper
+- JPA, H2 e PostgreSQL preparados para uma fase futura de persistência
 
-## Como Rodar
+## Como executar
 
-Frontend:
+### Frontend
 
 ```bash
 cd frontend
@@ -175,72 +151,56 @@ npm install
 npm run dev
 ```
 
-Backend:
+Crie `frontend/.env` quando a chamada autenticada ao GitHub for necessária:
 
-```bash
-cd backend
-export GITHUB_TOKEN="seu_token_do_github"
-./mvnw spring-boot:run
+```env
+VITE_GITHUB_TOKEN=seu_token
 ```
+
+### Backend
 
 No Windows PowerShell:
 
 ```powershell
 cd backend
-$env:GITHUB_TOKEN="seu_token_do_github"
+$env:GITHUB_TOKEN="seu_token"
 .\mvnw.cmd spring-boot:run
 ```
 
-O token do GitHub fica fora do Git. O backend le `GITHUB_TOKEN` por variavel de ambiente e faz o bind para `GitHubProperties`, usado pelo `GitHubClient`.
+Endpoint:
 
-## Roadmap Fullstack
-
-- Implementar `GET /api/projects` no backend.
-- Mover `GITHUB_TOKEN` para variavel de ambiente server-side.
-- Trocar o frontend para consumir o backend.
-- Adicionar cache para reduzir chamadas ao GitHub.
-- Padronizar respostas e tratamento de erros.
-- Preparar deploy fullstack.
-
-## Fase 3 - Persistencia e Sincronizacao
-
-Depois que o backend estiver expondo a API de projetos/repositorios, a proxima evolucao planejada e persistir os projetos destacados em PostgreSQL. A ideia e transformar a integracao com GitHub em um processo de sincronizacao, mantendo o frontend consumindo apenas a API propria.
-
-Arquitetura planejada para essa fase:
-
-```mermaid
-flowchart LR
-    github[GitHub REST API]
-    client[GitHubClient]
-    sync[RepoSyncService]
-    db[(PostgreSQL)]
-    service[RepoService]
-    controller[RepoController]
-    frontend[Frontend Vercel]
-
-    github --> client
-    client --> sync
-    sync --> db
-    db --> service
-    service --> controller
-    controller --> frontend
+```text
+GET http://localhost:8080/api/v1/repos/featured
 ```
 
-Objetivo da fase:
+Swagger UI:
 
-- Buscar repositorios no GitHub.
-- Filtrar projetos com topic `featured`.
-- Salvar ou atualizar os projetos no PostgreSQL.
-- Expor a API propria lendo do banco, nao diretamente do GitHub.
-- Evitar duplicacao usando o `id` do GitHub como referencia externa.
-- Permitir que o frontend continue desacoplado, consumindo somente o backend.
+```text
+http://localhost:8080/swagger-ui.html
+```
 
-Estrategia inicial:
+## Validação
 
-- Rodar a sincronizacao quando o backend subir.
-- Se a API do GitHub falhar, registrar o erro e manter o backend funcionando.
-- Depois evoluir para sincronizacao agendada com `@Scheduled`.
-- Futuramente adicionar endpoint manual como `POST /api/repos/sync`.
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+```powershell
+cd backend
+.\mvnw.cmd test
+```
+
+Os testes que chamam a API real do GitHub são manuais e ficam desabilitados na suíte padrão para não depender de rede ou token válido.
+
+## Próximas evoluções
+
+- Adicionar teste HTTP para o contrato do `GlobalExceptionHandler`.
+- Configurar timeout e logs estruturados no `GitHubClient`.
+- Avaliar cache no backend para reduzir chamadas externas.
+- Avaliar acesso público sem token no frontend.
+- Evoluir o backend com PostgreSQL e sincronização, sem tornar essa API obrigatória para o frontend.
 
 ## Autor
 
