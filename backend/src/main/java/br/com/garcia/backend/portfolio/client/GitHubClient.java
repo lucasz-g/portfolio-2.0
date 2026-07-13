@@ -10,6 +10,7 @@ import br.com.garcia.backend.portfolio.exceptions.GitHubApiException;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 @Component
 public class GitHubClient {
@@ -49,8 +50,8 @@ public class GitHubClient {
                     // Converte a resposta da API para uma lista de mapas (JSON/Dictionary)
                     .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {
                     });
-        } catch (Exception e) {
-            // Em caso de erro, imprime a mensagem de erro e retorna null
+        } catch (RestClientException e) {
+            // Em caso de erro, lança uma exception -> 
             throw new GitHubApiException("Erro ao buscar repositórios", e);
         }
 
@@ -86,8 +87,14 @@ public class GitHubClient {
     }
 
     public Map<String, Long> getLanguages(String languagesUrl) {
-        return restClient.get().uri(languagesUrl).retrieve().body(new ParameterizedTypeReference<Map<String, Long>>() {
-        });
+        
+        try {
+        return restClient.get().uri(languagesUrl).retrieve().body(new ParameterizedTypeReference<Map<String, Long>>(){});
+
+        } catch (RestClientException e) {
+            throw new GitHubApiException("Não foi possível buscar as linguagens do repo", e);
+        }
+    
     }
 
 }

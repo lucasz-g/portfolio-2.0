@@ -73,9 +73,6 @@ public class RepoServiceTest {
                 when(gitHubClient.getLanguages("https://api.github.com/repos/lucasz-g/portfolio-2.0/languages"))
                                 .thenReturn(Map.of("JavaScript", 43201L, "CSS", 21797L, "Java", 8958L));
 
-                when(gitHubClient.getLanguages("https://api.github.com/repos/lucasz-g/repo-normal/languages"))
-                                .thenReturn(Map.of("Java", 1000L));
-
                 // act
                 List<RepoResponseDTO> reposResponse = repoService.getFeaturedRepos();
 

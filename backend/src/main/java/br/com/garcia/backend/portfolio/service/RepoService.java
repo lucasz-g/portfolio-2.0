@@ -39,6 +39,7 @@ public class RepoService {
     }
 
     private boolean isFeatured(Map<String, Object> repo) {
+        
         List<String> topics = (List<String>) repo.get("topics");
 
         return topics != null && topics.contains("featured");

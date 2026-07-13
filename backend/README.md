@@ -1,290 +1,196 @@
-# Portfolio 2.0 - Backend
+# Portfolio 2.0 — Backend
 
-Backend Spring Boot do portfolio. Este modulo sera responsavel por intermediar a comunicacao entre o frontend e a GitHub API, protegendo credenciais e centralizando regras de negocio.
+API Spring Boot que consulta a GitHub REST API, seleciona repositórios destacados e expõe uma resposta própria e estável.
 
-## Estado Atual
+Este backend é funcional, mas não é uma dependência do frontend publicado. Ele existe como módulo independente para demonstrar integração entre sistemas e conceitos de backend aplicados ao projeto real.
 
-O backend ainda esta em fase inicial.
+## Estado atual
 
-Ja existe:
+- Endpoint `GET /api/v1/repos/featured` implementado.
+- Integração com GitHub usando `RestClient` e token no ambiente do backend.
+- Paginação de repositórios.
+- Filtro pelo topic `featured` antes da consulta de linguagens.
+- DTO e mapper para controlar o contrato de saída.
+- Spring Security com rotas públicas explícitas.
+- Swagger UI e descrição OpenAPI.
+- Exceção própria para falhas do GitHub.
+- Resposta de erro padronizada pelo `GlobalExceptionHandler`.
+- Teste unitário do fluxo de service.
+- Testes reais de integração disponíveis como validação manual e desabilitados por padrão.
 
-- Projeto Spring Boot criado.
-- Classe principal `BackendApplication`.
-- Teste de contexto `BackendApplicationTests`.
-- Configuracao basica em `application.properties`.
-- `GitHubClient` com `RestClient` para consumir a GitHub API.
-- `GitHubProperties` com `@ConfigurationProperties` para centralizar as propriedades da integracao com GitHub.
-- Placeholder `github.token=${GITHUB_TOKEN}` para ler o token via variavel de ambiente.
-- `.env.example` com exemplo de configuracao local sem expor segredo real.
-- Dependencias para Web MVC, Security, RestClient, JPA, H2, PostgreSQL e Lombok.
+Em uma medição manual durante o desenvolvimento, filtrar os repositórios antes de consultar `languages_url` reduziu o tempo observado de aproximadamente 18 segundos para 4,79 segundos. Esse número depende da rede, da quantidade de repositórios e do tempo de resposta do GitHub.
 
-Ainda nao existe:
-
-- Controller REST.
-- Service de projetos.
-- DTOs de resposta.
-- Configuracao de CORS.
-- Cache.
-
-## Stack
-
-- Java 21
-- Spring Boot 4.1.0
-- Spring Web MVC
-- Spring Security
-- Spring Data JPA
-- Spring RestClient
-- H2
-- PostgreSQL
-- Lombok
-- Maven Wrapper
-
-## Arquitetura Planejada
+## Arquitetura
 
 ```mermaid
-flowchart TD
-    frontend[Frontend React] --> controller[RepoController]
+flowchart LR
+    consumer[Postman / Swagger / cliente HTTP] --> security[SecurityFilterChain]
+    security --> controller[RepoController]
     controller --> service[RepoService]
-    service --> cache[(Cache opcional)]
     service --> client[GitHubClient]
     client --> github[GitHub REST API]
+    github --> client
     service --> mapper[RepoMapper]
-    mapper --> dto[RepoResponse DTO]
+    mapper --> dto[RepoResponseDTO]
     dto --> controller
-    controller --> frontend
+
+    client -. falha externa .-> exception[GitHubApiException]
+    exception --> handler[GlobalExceptionHandler]
+    handler --> error[ApiErrorResponse — 502]
+    error --> consumer
 ```
 
-## Responsabilidades das Camadas
-
-Separacao principal da integracao com GitHub:
+Responsabilidades:
 
 ```text
-GitHubClient
-- Fala com a GitHub API.
-- Monta base URL, headers, token, query params e paginacao.
-- Retorna os dados brutos vindos do GitHub.
-
-RepoService
-- Usa o GitHubClient.
-- Aplica regras da aplicacao.
-- Filtra, ordena e transforma os dados.
-- Entrega uma resposta limpa para Controller/Frontend.
-
-RepoController
-- Expoe os endpoints REST do backend.
-- Recebe a chamada do frontend.
-- Retorna os DTOs produzidos pela camada de service.
+GitHubClient busca.
+RepoService decide.
+RepoMapper transforma.
+RepoController expõe.
+GlobalExceptionHandler padroniza falhas.
 ```
 
-Frase guia da arquitetura:
+### Por que filtrar antes de buscar linguagens?
+
+O JSON do repositório contém `languages_url`, não o mapa completo de linguagens. A chamada adicional continua necessária, mas é feita somente para os repositórios que possuem o topic `featured`.
 
 ```text
-Client busca. Service decide. Controller expoe.
+P páginas de repositórios + N repositórios destacados
+= P + N chamadas HTTP
 ```
 
-## Fluxo Planejado
+Antes da otimização, o backend consultava linguagens de todos os repositórios e descartava a maior parte depois.
+
+## Fluxo de sucesso
 
 ```mermaid
 sequenceDiagram
-    participant FE as Frontend
+    actor Consumer as Cliente da API
     participant Controller as RepoController
     participant Service as RepoService
     participant Client as GitHubClient
     participant GH as GitHub REST API
 
-    FE->>Controller: GET /api/repos
-    Controller->>Service: findFeaturedRepos()
-    Service->>Client: fetchRepositories()
-    Client->>GH: GET /user/repos
-    GH-->>Client: Repositorios
-    Client-->>Service: Dados brutos
-    Service->>Client: fetchLanguages(repo)
-    Client->>GH: GET languages_url
-    GH-->>Client: Linguagens
-    Service->>Service: Filtra topic "featured"
-    Service-->>Controller: ProjectResponse[]
-    Controller-->>FE: 200 OK
+    Consumer->>Controller: GET /api/v1/repos/featured
+    Controller->>Service: getFeaturedRepos()
+    Service->>Client: getAllRepos()
+
+    loop Enquanto a página possuir itens
+        Client->>GH: GET /user/repos?page=N
+        GH-->>Client: Página de repositórios
+    end
+
+    Client-->>Service: Todos os repositórios
+    Service->>Service: Filtra topic featured
+
+    loop Somente os destacados
+        Service->>Client: getLanguages(languages_url)
+        Client->>GH: GET languages_url
+        GH-->>Client: Mapa de linguagens
+        Client-->>Service: Linguagens
+        Service->>Service: RepoMapper.toDto()
+    end
+
+    Service-->>Controller: List<RepoResponseDTO>
+    Controller-->>Consumer: 200 OK + JSON
 ```
 
-## Estrutura Atual
+## Fluxo de erro
 
-```text
-backend/
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── br/com/garcia/backend/portfolio/
-    │   │       ├── BackendApplication.java
-    │   │       ├── client/
-    │   │       │   └── GitHubClient.java
-    │   │       └── config/
-    │   │           └── GitHubProperties.java
-    │   └── resources/
-    │       └── application.properties
-    └── test/
-        ├── resources/
-        │   └── application.properties
-        └── java/
-            └── br/com/garcia/backend/portfolio/
-                └── BackendApplicationTests.java
+```mermaid
+sequenceDiagram
+    actor Consumer as Cliente da API
+    participant Controller as RepoController
+    participant Client as GitHubClient
+    participant GH as GitHub REST API
+    participant Handler as GlobalExceptionHandler
+
+    Consumer->>Controller: GET /api/v1/repos/featured
+    Controller->>Client: Consulta indireta via service
+    Client->>GH: Requisição HTTP
+    GH--xClient: Falha, timeout ou status de erro
+    Client-->>Controller: lança GitHubApiException
+    Controller-->>Handler: exceção propagada
+    Handler-->>Consumer: 502 Bad Gateway + ApiErrorResponse
 ```
 
-## Estrutura Planejada
+## Contrato da API
 
-```text
-src/main/java/br/com/garcia/backend/portfolio/
-├── BackendApplication.java
-├── config/
-│   ├── CorsConfig.java
-│   └── SecurityConfig.java
-├── controller/
-│   └── RepoController.java
-├── dto/
-│   └── RepoResponse.java
-├── client/
-│   └── GitHubClient.java
-├── service/
-│   └── RepoService.java
-└── mapper/
-    └── RepoMapper.java
-```
-
-## Contrato Planejado
+### Repositórios destacados
 
 ```http
-GET /api/repo
+GET /api/v1/repos/featured
 ```
 
-Resposta:
+Resposta `200 OK`:
 
 ```json
 [
   {
-    "id": 123,
-    "name": "project-name",
-    "description": "Project description",
-    "url": "https://github.com/user/project-name",
-    "homepage": "https://project-demo.vercel.app",
+    "repoId": 1230127938,
+    "repoName": "checkin-api",
+    "repoDescription": "API de check-in",
+    "repoUrl": "https://github.com/lucasz-g/checkin-api",
+    "repoHomePage": "",
     "languages": {
-      "JavaScript": 12000,
-      "CSS": 3000
+      "Java": 91964
     },
-    "topics": ["featured"]
+    "repoTopics": [
+      "featured"
+    ]
   }
 ]
 ```
 
-## Variaveis de Ambiente Planejadas
+### Falha na integração
 
-```env
-GITHUB_TOKEN=seu_token_do_github
-GITHUB_USERNAME=lucasz-g
-FRONTEND_ORIGIN=http://localhost:5173
-```
+Resposta `502 Bad Gateway`:
 
-## Configuracao do Token do GitHub
-
-O token do GitHub nao deve ser escrito diretamente em `application.properties`, porque esse arquivo e versionado no Git. O backend usa variavel de ambiente para manter o segredo fora do repositorio.
-
-Configuracao atual:
-
-```properties
-spring.application.name=backend
-github.token=${GITHUB_TOKEN}
-```
-
-Fluxo da configuracao:
-
-```mermaid
-flowchart LR
-    env[Variavel de ambiente GITHUB_TOKEN]
-    props[application.properties github.token]
-    bind[GitHubProperties token]
-    client[GitHubClient]
-    github[GitHub REST API]
-
-    env --> props
-    props --> bind
-    bind --> client
-    client --> github
-```
-
-`GitHubProperties` faz o bind das propriedades com prefixo `github`:
-
-```java
-@ConfigurationProperties(prefix = "github")
-public record GitHubProperties(String token) {
+```json
+{
+  "timestamp": "2026-07-13T18:00:00Z",
+  "status": 502,
+  "error": "Bad Gateway",
+  "message": "Erro ao buscar repositórios",
+  "path": "/api/v1/repos/featured"
 }
 ```
 
-Esse bind nao le o arquivo `.env` diretamente. Ele le propriedades que o Spring ja conhece. No caso atual, o Spring resolve `github.token` a partir da variavel de ambiente `GITHUB_TOKEN`.
+O handler não devolve a causa técnica nem o token ao cliente. A causa original permanece encadeada na exceção para diagnóstico interno.
 
-O `GitHubClient` recebe `GitHubProperties` no construtor:
+## Estrutura
 
-```java
-public GitHubClient(RestClient.Builder restClientBuilder, GitHubProperties gitHubProperties) {
-    this.restClient = restClientBuilder
-            .baseUrl("https://api.github.com")
-            .defaultHeaders(headers -> {
-                headers.setBearerAuth(gitHubProperties.token());
-                headers.set("Accept", "application/vnd.github.v3+json");
-            })
-            .build();
-}
+```text
+src/main/java/br/com/garcia/backend/portfolio/
+├── BackendApplication.java
+├── client/
+│   └── GitHubClient.java
+├── config/
+│   ├── GitHubProperties.java
+│   └── SecurityConfig.java
+├── controller/
+│   └── RepoController.java
+├── dtos/
+│   └── RepoResponseDTO.java
+├── exceptions/
+│   ├── ApiErrorResponse.java
+│   ├── GitHubApiException.java
+│   └── GlobalExceptionHandler.java
+├── mapper/
+│   └── RepoMapper.java
+└── service/
+    └── RepoService.java
 ```
 
-### Por que usar bind em vez de `@Value`
+## Configuração
 
-Para apenas um valor, `@Value("${github.token}")` funcionaria. O bind com `@ConfigurationProperties` foi escolhido porque a integracao com GitHub tende a crescer.
-
-Exemplo de configuracoes futuras:
+O Spring resolve o token por meio de:
 
 ```properties
 github.token=${GITHUB_TOKEN}
-github.base-url=https://api.github.com
-github.username=lucasz-g
-github.per-page=100
-github.featured-topic=featured
 ```
 
-Com `@ConfigurationProperties`, essas configuracoes ficam agrupadas em uma classe tipada, evitando espalhar `@Value` por varias classes.
-
-### Uso local
-
-No PowerShell:
-
-```powershell
-$env:GITHUB_TOKEN="seu_token_do_github"
-.\mvnw.cmd spring-boot:run
-```
-
-Em Linux/macOS:
-
-```bash
-export GITHUB_TOKEN="seu_token_do_github"
-./mvnw spring-boot:run
-```
-
-O arquivo `.env.example` existe apenas como modelo:
-
-```env
-GITHUB_TOKEN=your_github_token_here
-```
-
-Se voce criar um `.env` local, ele nao deve ser commitado. O `.gitignore` ja ignora `.env` e arquivos locais similares.
-
-Para testes, existe `src/test/resources/application.properties` com um token fake:
-
-```properties
-github.token=test-token
-```
-
-Isso permite subir o contexto do Spring nos testes sem depender de um token real.
-
-## Como Rodar
+O `GitHubProperties` faz o bind tipado e entrega o valor ao `GitHubClient`. O arquivo `.env` não é lido automaticamente pelo Spring; a forma direta de execução é definir a variável no processo.
 
 No Windows PowerShell:
 
@@ -298,96 +204,65 @@ Em Linux/macOS:
 ```bash
 export GITHUB_TOKEN="seu_token_do_github"
 ./mvnw spring-boot:run
+```
+
+O `.env` local está ignorado pelo Git e `.env.example` documenta somente o nome esperado da variável.
+
+## Segurança e documentação
+
+Estas rotas são públicas:
+
+```text
+/api/v1/repos/**
+/swagger-ui.html
+/swagger-ui/**
+/v3/api-docs/**
+```
+
+Swagger UI:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+Descrição OpenAPI:
+
+```text
+http://localhost:8080/v3/api-docs
 ```
 
 ## Testes
-
-No Windows PowerShell:
 
 ```powershell
 .\mvnw.cmd test
 ```
 
-Em Linux/macOS:
+A suíte padrão cobre o carregamento do contexto e a regra do `RepoService` com `GitHubClient` mockado. Ela também verifica que repositórios sem `featured` não provocam chamada desnecessária a `getLanguages()`.
 
-```bash
-./mvnw test
-```
+Os testes anotados com `@Disabled` chamam a API real e devem ser executados manualmente com rede e token válido.
 
-## Proximos Passos
+## Relação com o frontend
 
-1. Criar `RepoController`.
-2. Criar `RepoService` para filtro por topic `featured`.
-3. Criar DTOs para resposta ao frontend.
-4. Configurar CORS para o frontend.
-5. Adicionar cache para reduzir chamadas externas.
-6. Atualizar o frontend para consumir `GET /api/repos`.
-
-## Fase 3 - PostgreSQL como Fonte de Leitura
-
-Apos a primeira versao do backend consumir a GitHub API e expor `GET /api/repos`, a proxima fase planejada e persistir os projetos destacados em PostgreSQL.
-
-O frontend nao deve consumir o banco diretamente. Mesmo com PostgreSQL, o fluxo continua passando pelo backend:
+O frontend não consome este endpoint atualmente. Ambos os módulos consultam o GitHub de forma independente:
 
 ```text
-GitHub API -> Backend Spring -> PostgreSQL -> Backend Spring API -> Frontend
+Frontend React ──> GitHub API
+Backend Spring ──> GitHub API
 ```
 
-Arquitetura alvo dessa fase:
+Isso evita que uma indisponibilidade ou ausência de deploy do backend impeça o portfólio de carregar. A API permanece disponível para demonstração local, testes via Postman/Swagger e futuras integrações.
 
-```mermaid
-flowchart TD
-    client[GitHubClient] --> sync[RepoSyncService]
-    sync --> repository[RepoRepository]
-    repository --> db[(PostgreSQL)]
-    db --> repository
-    repository --> service[RepoService]
-    service --> dto[RepoResponseDTO]
-    dto --> controller[RepoController]
-    controller --> frontend[Frontend]
-```
+## Próximos passos
 
-### Objetivo
+### Necessário para robustez
 
-- Buscar repositorios no GitHub.
-- Filtrar apenas projetos com topic `featured`.
-- Salvar ou atualizar esses projetos no PostgreSQL.
-- Fazer `GET /api/repos` ler do banco.
-- Reduzir dependencia de chamadas ao GitHub durante o uso normal do frontend.
-- Praticar uma stack backend mais completa com Spring, JPA e PostgreSQL.
+- Adicionar teste HTTP do `GlobalExceptionHandler` e do contrato `502`.
+- Configurar timeouts de conexão e leitura no cliente HTTP.
+- Substituir comentários de depuração por logs estruturados.
 
-### Novas Camadas Necessarias
+### Evolução opcional
 
-```text
-entity/
-  RepoEntity.java
-
-repository/
-  RepoRepository.java
-
-service/
-  RepoSyncService.java
-  RepoService.java
-```
-
-Papel de cada camada:
-
-- `RepoEntity`: representa a tabela de repositorios/projetos no PostgreSQL.
-- `RepoRepository`: faz acesso ao banco com Spring Data JPA.
-- `RepoSyncService`: busca dados no GitHub, filtra `featured` e grava no banco.
-- `RepoService`: busca projetos persistidos e monta DTOs para o controller.
-
-### Estrategia de Sincronizacao
-
-Primeira versao:
-
-- Rodar a sincronizacao quando o backend iniciar.
-- Usar o `id` do GitHub como identificador externo para evitar duplicidade.
-- Se a API do GitHub falhar, logar o erro e manter o backend no ar.
-
-Evolucao futura:
-
-- Rodar sincronizacao agendada com `@Scheduled`.
-- Criar endpoint manual `POST /api/repos/sync`.
-- Salvar `lastSyncedAt` para acompanhar quando o projeto foi atualizado.
-- Adicionar tratamento de erro e logs mais claros para falhas da GitHub API.
+- Adicionar cache para reduzir chamadas ao GitHub.
+- Persistir snapshots em PostgreSQL com JPA.
+- Criar sincronização manual ou agendada.
+- Publicar o backend quando houver uma plataforma adequada, sem tornar o frontend dependente dele.
