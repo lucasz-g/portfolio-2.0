@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import br.com.garcia.backend.portfolio.config.GitHubProperties;
+import br.com.garcia.backend.portfolio.exceptions.GitHubApiException;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -49,8 +51,7 @@ public class GitHubClient {
                     });
         } catch (Exception e) {
             // Em caso de erro, imprime a mensagem de erro e retorna null
-            System.err.println("Erro ao buscar repositórios na página " + page + ": " + e.getMessage());
-            return null;
+            throw new GitHubApiException("Erro ao buscar repositórios", e);
         }
 
     }
