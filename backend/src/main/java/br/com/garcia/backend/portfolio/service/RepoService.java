@@ -24,26 +24,27 @@ public class RepoService {
     }
 
     // Métodos
-    public List<RepoResponseDTO> getRepos() {
+    public List<RepoResponseDTO> getFeaturedRepos() {
         List<Map<String, Object>> apiRepos = gitHubClient.getAllRepos();
-        
-        List<RepoResponseDTO> apiReposAndLanguages = apiRepos.stream()
-            .map(
-                repo -> {
-                    String languagesUrl = (String) repo.get("languages_url"); 
-                    Map<String, Long> languages = gitHubClient.getLanguages(languagesUrl); 
-                
-                    return repoMapper.toDto(repo, languages); 
-            }).toList(); 
 
-            List<RepoResponseDTO> featuredRepos = filterRepos(apiReposAndLanguages); 
-            return featuredRepos; 
+        List<RepoResponseDTO> apiReposAndLanguages = apiRepos.stream()
+                .map(
+                        repo -> {
+                            String languagesUrl = (String) repo.get("languages_url");
+                            Map<String, Long> languages = gitHubClient.getLanguages(languagesUrl);
+
+                            return repoMapper.toDto(repo, languages);
+                        })
+                .toList();
+
+        List<RepoResponseDTO> featuredRepos = filterFeaturedRepos(apiReposAndLanguages);
+        return featuredRepos;
     }
 
-    public List<RepoResponseDTO> filterRepos(List<RepoResponseDTO> allMyResponseRepos) {
+    public List<RepoResponseDTO> filterFeaturedRepos(List<RepoResponseDTO> allMyResponseRepos) {
         return allMyResponseRepos.stream()
-            .filter(repo -> repo.repoTopics() != null && repo.repoTopics().contains("featured"))
-            .toList();
+                .filter(repo -> repo.repoTopics() != null && repo.repoTopics().contains("featured"))
+                .toList();
     }
 
 }
