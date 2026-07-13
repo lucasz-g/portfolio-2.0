@@ -11,7 +11,7 @@ Frontend do portfolio, desenvolvido com React e Vite. Esta aplicacao entrega a e
 - Responsividade desktop/mobile.
 - Deploy preparado para Vercel.
 
-> Nota: a integracao direta com GitHub API e temporaria. O plano e migrar o consumo para o backend Spring Boot em `../backend`.
+> Decisão arquitetural: o frontend continuará consultando o GitHub diretamente. O backend Spring Boot em `../backend` é um módulo independente e não será requisito para o site funcionar.
 
 ## Rotas
 
@@ -124,7 +124,7 @@ Crie um arquivo `.env` dentro de `frontend/`:
 VITE_GITHUB_TOKEN=seu_token_do_github
 ```
 
-Importante: qualquer variavel `VITE_*` e exposta no bundle final. Por isso, o uso desse token deve ser removido quando o backend assumir a integracao.
+Importante: qualquer variável `VITE_*` é exposta no bundle final. Portanto, `VITE_GITHUB_TOKEN` não é um segredo. Para manter a arquitetura direta com menor risco, uma evolução possível é consultar apenas repositórios públicos sem token. Enquanto um token for necessário, ele deve ter permissões mínimas e nunca possuir acesso de escrita.
 
 ## Scripts
 
@@ -160,22 +160,13 @@ O arquivo `vercel.json` configura rewrite para SPA:
 
 Isso permite acessar diretamente `/projects` e `/contact` no deploy da Vercel.
 
-## Migracao Para Backend
+## Relação com o backend
 
-Quando o backend estiver pronto, o frontend deve trocar:
-
-```text
-React -> GitHub REST API
-```
-
-por:
+O backend Spring Boot foi implementado como uma aplicação paralela para estudo e demonstração de integração, camadas, segurança, OpenAPI e testes.
 
 ```text
-React -> Spring Boot API -> GitHub REST API
+Frontend React ──> GitHub REST API
+Backend Spring ──> GitHub REST API
 ```
 
-Endpoint planejado:
-
-```text
-GET /api/projects
-```
+O frontend não chama o backend. Assim, o deploy na Vercel não depende da disponibilidade, hospedagem ou latência de uma API própria. O backend pode evoluir e ser publicado separadamente no futuro sem alterar essa garantia de funcionamento do site.
